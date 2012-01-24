@@ -23,7 +23,7 @@ along with PyCAM.  If not, see <http://www.gnu.org/licenses/>.
 from pycam.Geometry.Line import Line
 from pycam.Geometry.Point import Point, Vector
 from pycam.Geometry.Plane import Plane
-from pycam.Geometry import TransformableContainer, IDGenerator, get_bisector
+from pycam.Geometry import TransformableContainer, get_bisector
 from pycam.Geometry.utils import number, epsilon
 import pycam.Utils.log
 # import later to avoid circular imports
@@ -42,7 +42,7 @@ LINE_WIDTH_OUTER = 1.3
 log = pycam.Utils.log.get_logger()
 
 
-class PolygonInTree(IDGenerator):
+class PolygonInTree(object):
     """ This class is a wrapper around Polygon objects that is used for sorting.
     """
 
@@ -57,7 +57,7 @@ class PolygonInTree(IDGenerator):
         self.children = []
 
     def __eq__(self, other):
-        return self.id == other.id
+        return self is other
 
     def __cmp__(self, other):
         return cmp(self.area, other.area)

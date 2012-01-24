@@ -46,7 +46,7 @@ def run_dropcutter():
     moves = path_generator.GenerateToolPath(tool, [model], motion_grid,
                                             minz=low[2], maxz=high[2],
                                             draw_callback=progress_bar.update)
-    
+        #print '\nMOVES', moves
 
 
 if __name__ == '__main__':
