@@ -72,10 +72,10 @@ def convert_triangles_to_vertices_faces(triangles):
         # models as well.
         for p in (t.p1, t.p3, t.p2):
             # add the point to the id/index mapping, if necessary
-            if not id_index_map.has_key(p.id):
+            if not id_index_map.has_key(id(p)):
                 corners.append((p.x, p.y, p.z))
-                id_index_map[p.id] = len(corners) - 1
-            coords.append(id_index_map[p.id]) 
+                id_index_map[id(p)] = len(corners) - 1
+            coords.append(id_index_map[id(p)]) 
         faces.append(coords)
     return corners, faces
 

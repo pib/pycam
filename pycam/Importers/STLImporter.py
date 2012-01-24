@@ -43,9 +43,8 @@ kdtree = None
 def UniqueVertex(x, y, z):
     global vertices
     if kdtree:
-        last = Point.id
-        p = kdtree.Point(x, y, z)
-        if p.id == last:
+        duplicate, p = kdtree.Point(x, y, z)
+        if not duplicate:
             vertices += 1
         return p
     else:

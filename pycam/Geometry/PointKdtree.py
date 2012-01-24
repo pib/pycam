@@ -57,10 +57,10 @@ class PointKdtree(kdtree):
         (nn, dist) = self.nearest_neighbor(n, self.dist)
         if nn and (dist < self.tolerance):
             self._n = n
-            return nn.obj
+            return True, nn.obj
         else:
             n.obj = Point(x, y, z)
             self._n = None
             self.insert(n)
-            return n.obj
+            return False, n.obj
 

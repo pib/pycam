@@ -24,7 +24,7 @@ along with PyCAM.  If not, see <http://www.gnu.org/licenses/>.
 from pycam.Geometry.Point import Point, Vector
 from pycam.Geometry.Plane import Plane
 from pycam.Geometry.Line import Line
-from pycam.Geometry import TransformableContainer, IDGenerator
+from pycam.Geometry import TransformableContainer
 import pycam.Utils.log
 
 
@@ -37,9 +37,9 @@ except ImportError:
     GL_enabled = False
 
 
-class Triangle(IDGenerator, TransformableContainer):
+class Triangle(TransformableContainer):
 
-    __slots__ = ["id", "p1", "p2", "p3", "normal", "minx", "maxx", "miny",
+    __slots__ = ["p1", "p2", "p3", "normal", "minx", "maxx", "miny",
             "maxy", "minz", "maxz", "e1", "e2", "e3", "normal", "center",
             "radius", "radiussq", "middle"]
 
@@ -91,7 +91,7 @@ class Triangle(IDGenerator, TransformableContainer):
                 self.p1.z * alpha + self.p2.z * beta + self.p3.z * gamma)
 
     def __repr__(self):
-        return "Triangle%d<%s,%s,%s>" % (self.id, self.p1, self.p2, self.p3)
+        return "Triangle%d<%s,%s,%s>" % (id(self), self.p1, self.p2, self.p3)
 
     def copy(self):
         return self.__class__(self.p1.copy(), self.p2.copy(), self.p3.copy(),
@@ -158,7 +158,7 @@ class Triangle(IDGenerator, TransformableContainer):
             factor = 0.001
             GL.glScalef(factor * maxdim, factor * maxdim, factor * maxdim)
             w = 0
-            id_string = "%s." % str(self.id)
+            id_string = "%s." % str(id(self))
             for ch in id_string:
                 w += GLUT.glutStrokeWidth(GLUT.GLUT_STROKE_ROMAN, ord(ch))
             GL.glTranslate(-w/2, 0, 0)
@@ -181,10 +181,10 @@ class Triangle(IDGenerator, TransformableContainer):
                 GL.glTranslatef(n.x, n.y, n.z)
                 GL.glScalef(0.001, 0.001, 0.001)
                 w = 0
-                for ch in str(p.id):
+                for ch in str(id(p)):
                     w += GLUT.glutStrokeWidth(GLUT.GLUT_STROKE_ROMAN, ord(ch))
                     GL.glTranslate(-w/2, 0, 0)
-                for ch in str(p.id):
+                for ch in str(id(p)):
                     GLUT.glutStrokeCharacter(GLUT.GLUT_STROKE_ROMAN, ord(ch))
                 GL.glPopMatrix()
 
