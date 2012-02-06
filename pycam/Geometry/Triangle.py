@@ -21,7 +21,7 @@ You should have received a copy of the GNU General Public License
 along with PyCAM.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from pycam.Geometry.Point import Point, Vector
+from pycam.Geometry.Point import Point, Vector, normalized
 from pycam.Geometry.Plane import Plane
 from pycam.Geometry.Line import Line
 from pycam.Geometry import TransformableContainer, IDGenerator
@@ -53,12 +53,12 @@ class Triangle(IDGenerator, TransformableContainer):
         self.reset_cache()
 
     def reset_cache(self):
-        self.minx = min(self.p1.x, self.p2.x, self.p3.x)
-        self.miny = min(self.p1.y, self.p2.y, self.p3.y)
-        self.minz = min(self.p1.z, self.p2.z, self.p3.z)
-        self.maxx = max(self.p1.x, self.p2.x, self.p3.x)
-        self.maxy = max(self.p1.y, self.p2.y, self.p3.y)
-        self.maxz = max(self.p1.z, self.p2.z, self.p3.z)
+        self.minx = min(self.p1[0], self.p2[0], self.p3[0])
+        self.miny = min(self.p1[1], self.p2[1], self.p3[1])
+        self.minz = min(self.p1[2], self.p2[2], self.p3[2])
+        self.maxx = max(self.p1[0], self.p2[0], self.p3[0])
+        self.maxy = max(self.p1[1], self.p2[1], self.p3[1])
+        self.maxz = max(self.p1[2], self.p2[2], self.p3[2])
         self.e1 = Line(self.p1, self.p2)
         self.e2 = Line(self.p2, self.p3)
         self.e3 = Line(self.p3, self.p1)
@@ -66,11 +66,9 @@ class Triangle(IDGenerator, TransformableContainer):
         if self.normal is None:
             self.normal = self.p3.sub(self.p1).cross(self.p2.sub( \
                     self.p1)).normalized()
-        if not isinstance(self.normal, Vector):
-            self.normal = self.normal.get_vector()
         # make sure that the normal has always a unit length
-        self.normal = self.normal.normalized()
-        self.center = self.p1.add(self.p2).add(self.p3).div(3)
+        self.normal = normalized(self.normal)
+        self.center = (self.p1 + self.p2 + self.p3) / 3
         self.plane = Plane(self.center, self.normal)
         # calculate circumcircle (resulting in radius and middle)
         denom = self.p2.sub(self.p1).cross(self.p3.sub(self.p2)).norm
@@ -86,9 +84,9 @@ class Triangle(IDGenerator, TransformableContainer):
         gamma = self.p1.sub(self.p2).normsq \
                 * self.p3.sub(self.p1).dot(self.p3.sub(self.p2)) / denom2
         self.middle = Point(
-                self.p1.x * alpha + self.p2.x * beta + self.p3.x * gamma,
-                self.p1.y * alpha + self.p2.y * beta + self.p3.y * gamma,
-                self.p1.z * alpha + self.p2.z * beta + self.p3.z * gamma)
+                self.p1[0] * alpha + self.p2[0] * beta + self.p3[0] * gamma,
+                self.p1[1] * alpha + self.p2[1] * beta + self.p3[1] * gamma,
+                self.p1[2] * alpha + self.p2[2] * beta + self.p3[2] * gamma)
 
     def __repr__(self):
         return "Triangle%d<%s,%s,%s>" % (self.id, self.p1, self.p2, self.p3)
@@ -118,25 +116,25 @@ class Triangle(IDGenerator, TransformableContainer):
         GL.glBegin(GL.GL_TRIANGLES)
         # use normals to improve lighting (contributed by imyrek)
         normal_t = self.normal
-        GL.glNormal3f(normal_t.x, normal_t.y, normal_t.z)
+        GL.glNormal3f(normal_t[0], normal_t[1], normal_t[2])
         # The triangle's points are in clockwise order, but GL expects
         # counter-clockwise sorting.
-        GL.glVertex3f(self.p1.x, self.p1.y, self.p1.z)
-        GL.glVertex3f(self.p3.x, self.p3.y, self.p3.z)
-        GL.glVertex3f(self.p2.x, self.p2.y, self.p2.z)
+        GL.glVertex3f(self.p1[0], self.p1[1], self.p1[2])
+        GL.glVertex3f(self.p3[0], self.p3[1], self.p3[2])
+        GL.glVertex3f(self.p2[0], self.p2[1], self.p2[2])
         GL.glEnd()
         if show_directions: # display surface normals
             n = self.normal
             c = self.center
             d = 0.5
             GL.glBegin(GL.GL_LINES)
-            GL.glVertex3f(c.x, c.y, c.z)
-            GL.glVertex3f(c.x+n.x*d, c.y+n.y*d, c.z+n.z*d)
+            GL.glVertex3f(c[0], c[1], c[2])
+            GL.glVertex3f(c[0]+n[0]*d, c[1]+n[1]*d, c[2]+n[2]*d)
             GL.glEnd()
         if False: # display bounding sphere
             GL.glPushMatrix()
             middle = self.middle
-            GL.glTranslate(middle.x, middle.y, middle.z)
+            GL.glTranslate(middle[0], middle[1], middle[2])
             if not hasattr(self, "_sphere"):
                 self._sphere = GLU.gluNewQuadric()
             GLU.gluSphere(self._sphere, self.radius, 10, 10)
@@ -144,15 +142,15 @@ class Triangle(IDGenerator, TransformableContainer):
         if pycam.Utils.log.is_debug(): # draw triangle id on triangle face
             GL.glPushMatrix()
             c = self.center
-            GL.glTranslate(c.x, c.y, c.z)
+            GL.glTranslate(c[0], c[1], c[2])
             p12 = self.p1.add(self.p2).mul(0.5)
             p3_12 = self.p3.sub(p12).normalized()
             p2_1 = self.p1.sub(self.p2).normalized()
             pn = p2_1.cross(p3_12)
-            GL.glMultMatrixf((p2_1.x, p2_1.y, p2_1.z, 0, p3_12.x, p3_12.y,
-                    p3_12.z, 0, pn.x, pn.y, pn.z, 0, 0, 0, 0, 1))
+            GL.glMultMatrixf((p2_1[0], p2_1[1], p2_1[2], 0, p3_12[0], p3_12[1],
+                    p3_12[2], 0, pn[0], pn[1], pn[2], 0, 0, 0, 0, 1))
             n = self.normal.mul(0.01)
-            GL.glTranslatef(n.x, n.y, n.z)
+            GL.glTranslatef(n[0], n[1], n[2])
             maxdim = max((self.maxx - self.minx), (self.maxy - self.miny),
                     (self.maxz - self.minz))
             factor = 0.001
@@ -175,10 +173,10 @@ class Triangle(IDGenerator, TransformableContainer):
             for p in (self.p1, self.p2, self.p3):
                 GL.glPushMatrix()
                 pp = p.sub(p.sub(c).mul(0.3))
-                GL.glTranslate(pp.x, pp.y, pp.z)
-                GL.glMultMatrixf((p2_1.x, p2_1.y, p2_1.z, 0, p3_12.x, p3_12.y,
-                        p3_12.z, 0, pn.x, pn.y, pn.z, 0, 0, 0, 0, 1))
-                GL.glTranslatef(n.x, n.y, n.z)
+                GL.glTranslate(pp[0], pp[1], pp[2])
+                GL.glMultMatrixf((p2_1[0], p2_1[1], p2_1[2], 0, p3_12[0], p3_12[1],
+                        p3_12[2], 0, pn[0], pn[1], pn[2], 0, 0, 0, 0, 1))
+                GL.glTranslatef(n[0], n[1], n[2])
                 GL.glScalef(0.001, 0.001, 0.001)
                 w = 0
                 for ch in str(p.id):

@@ -24,7 +24,7 @@ along with PyCAM.  If not, see <http://www.gnu.org/licenses/>.
 __all__ = ["utils", "Line", "Model", "Path", "Plane", "Point", "Triangle",
            "PolygonExtractor", "TriangleKdtree", "intersection", "kdtree",
            "Matrix", "Polygon", "Letters"]
-
+import __builtin__
 from pycam.Geometry.utils import epsilon, ceil
 import math
 
@@ -184,19 +184,10 @@ def get_bezier_lines(points_with_bulge, segments=32):
         return result
 
 
-def _id_generator():
-    current_id = 0
-    while True:
-        yield current_id
-        current_id += 1
-
-
 class IDGenerator(object):
-
-    __id_gen_func = _id_generator()
-
-    def __init__(self):
-        self.id = self.__id_gen_func.next()
+    @property
+    def id(self):
+        return __builtin__.id(self)
 
 
 class TransformableContainer(object):

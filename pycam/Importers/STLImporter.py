@@ -29,6 +29,8 @@ from pycam.Geometry.Model import Model
 import pycam.Utils.log
 import pycam.Utils
 
+from numpy import dot, cross
+
 from struct import unpack 
 import StringIO
 import re
@@ -43,9 +45,8 @@ kdtree = None
 def UniqueVertex(x, y, z):
     global vertices
     if kdtree:
-        last = Point.id
-        p = kdtree.Point(x, y, z)
-        if p.id == last:
+        is_new, p = kdtree.Point(x, y, z)
+        if is_new:
             vertices += 1
         return p
     else:
@@ -242,7 +243,7 @@ def ImportModel(filename, use_kdtree=True, callback=None, **kwargs):
                             % (current_line, filename))
                     n, p1, p2, p3 = None, None, None, None
                     continue
-                if not n:
+                if not n.any():
                     n = p2.sub(p1).cross(p3.sub(p1)).normalized()
 
                 # validate the normal
@@ -254,7 +255,7 @@ def ImportModel(filename, use_kdtree=True, callback=None, **kwargs):
                     dotcross = 0
                 else:
                     # make sure the points are in ClockWise order
-                    dotcross = n.dot(p2.sub(p1).cross(p3.sub(p1)))
+                    dotcross = dot(n, cross((p2 - p1), p3 - p1))
                 if dotcross > 0:
                     # Triangle expects the vertices in clockwise order
                     t = Triangle(p1, p3, p2, n)

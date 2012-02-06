@@ -22,19 +22,34 @@ along with PyCAM.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from pycam.Geometry.utils import epsilon, sqrt, number
-from pycam.Geometry import IDGenerator
+import numpy
 
 
 def _is_near(x, y):
     return abs(x - y) < epsilon
 
+def Point(x, y, z):
+    return numpy.array([x, y, z], dtype=float)
 
-class Point(IDGenerator):
+def norm(p):
+    return numpy.sqrt(normsq(p))
 
-    __slots__ = ["id", "x", "y", "z", "_norm", "_normsq"]
+def normsq(p):
+    return numpy.dot(p, p)
+
+def normalized(p):
+    n = norm(p)
+    return p / n
+
+
+def Vector(x, y, z):
+    return numpy.array([x, y, z], dtype=float)
+'''
+class Point(object):
+
+    __slots__ = ["x", "y", "z", "_norm", "_normsq"]
 
     def __init__(self, x, y, z):
-        super(Point, self).__init__()
         self.x = number(x)
         self.y = number(y)
         self.z = number(z)
@@ -56,14 +71,14 @@ class Point(IDGenerator):
         return self.__class__(float(self.x), float(self.y), float(self.z))
 
     def __repr__(self):
-        return "Point%d<%g,%g,%g>" % (self.id, self.x, self.y, self.z)
+        return "Point%d<%g,%g,%g>" % (id(self), self.x, self.y, self.z)
 
     def __cmp__(self, other):
         """ Two points are equal if all dimensions are identical.
         Otherwise the result is based on the individual x/y/z comparisons.
         """
         if self.__class__ == other.__class__:
-            if (self.id == other.id) or \
+            if (self is other) or \
                     ((_is_near(self.x, other.x)) and \
                         (_is_near(self.y, other.y)) and \
                         (_is_near(self.z, other.z))):
@@ -166,5 +181,6 @@ class Vector(Point):
         self.reset_cache()
 
     def __repr__(self):
-        return "Vector%d<%g,%g,%g>" % (self.id, self.x, self.y, self.z)
+        return "Vector%d<%g,%g,%g>" % (id(self), self.x, self.y, self.z)
 
+'''

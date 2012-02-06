@@ -52,8 +52,9 @@ def run_dropcutter():
 if __name__ == '__main__':
     start_time = time()
     cProfile.run('run_dropcutter()', 'dropcutter.pyprof')
+    #run_dropcutter()
     run_time = time() - start_time
     print '\nDropcutter took %f seconds' % run_time
     p = pstats.Stats('dropcutter.pyprof')
     print 'Top ten time-consuming functions:'
-    p.sort_stats('time').print_stats(10)
+    p.sort_stats('time').print_stats(50)
